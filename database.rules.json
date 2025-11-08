@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "companies": {
+      "$companyId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "machines": {
+          "$machineId": {
+            ".validate": "newData.hasChildren(['machineName','floorNumber','initialSeconds','remainingSeconds','status'])"
+          }
+        }
+      }
+    }
+  }
+}
