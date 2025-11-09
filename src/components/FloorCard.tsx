@@ -69,8 +69,10 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
               <img
                 src={Working}
                 alt="working"
-                className="w-full h-full object-contain animate-spin border-2 rounded-full"
-                style={{ animationDuration: "8s" }}
+                className="w-full h-full object-contain 
+                rounded-full"
+                // style={{ animationDuration: "8s" }}
+                //                animate-spin border-2
               />
             </div>
             <div className="text-xs text-gray-600 mb-1">
