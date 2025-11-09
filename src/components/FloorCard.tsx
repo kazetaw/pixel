@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import SuccessImgage from "../assets/images/2.png";
 import CryImage from "../assets/images/3.png";
 import Working from "../assets/images/1.png";
-import GearSpinner from "./GearSpinner";
 
 interface Props {
   num: string;
