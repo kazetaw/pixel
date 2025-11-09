@@ -55,7 +55,7 @@ export default function TimerModal({
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 shadow-2xl w-80">
         <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
-          ตั้งเวลานับถอยหลังให้ {selected.floor.profession}
+          ตั้งเวลา {selected.floor.profession}
         </h3>
 
         <div className="flex justify-center gap-2 mb-6 text-center">
@@ -68,18 +68,28 @@ export default function TimerModal({
               <label className="block text-xs text-gray-500 mb-1">
                 {label}
               </label>
-              <input
-                type="number"
-                min="0"
-                max={max}
-                value={val}
-                onChange={(e) => {
-                  const parts = selectedTime.split(":");
-                  parts[idx] = e.target.value.padStart(2, "0");
-                  setSelectedTime(parts.join(":"));
-                }}
-                className="w-16 border rounded-lg text-center text-lg py-1"
-              />
+                  <input
+                    type="number"
+                    min="0"
+                    max={max}
+                    value={val}
+                    onChange={(e) => {
+                      // Allow empty input while typing (don't pad here)
+                      const parts = selectedTime.split(":");
+                      const cleaned = e.target.value.replace(/\D/g, "").slice(0, 2);
+                      parts[idx] = cleaned;
+                      setSelectedTime(parts.join(":"));
+                    }}
+                    onBlur={(e) => {
+                      // Normalize value on blur: clamp to max and pad to 2 digits
+                      const parts = selectedTime.split(":");
+                      const raw = e.target.value.replace(/\D/g, "");
+                      const n = raw === "" ? 0 : Math.min(Number(raw), max);
+                      parts[idx] = String(n).padStart(2, "0");
+                      setSelectedTime(parts.join(":"));
+                    }}
+                    className="w-16 border rounded-lg text-center text-lg py-1"
+                  />
             </div>
           ))}
         </div>

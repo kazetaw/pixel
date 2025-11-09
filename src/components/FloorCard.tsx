@@ -4,8 +4,13 @@ import { hhmmss } from "../utils/time";
 import { getStatusColor, getStatusText } from "../utils/ui";
 import { database, COMPANY_ID } from "../firebase/config";
 import { FaPlay, FaPause, FaRedo } from "react-icons/fa";
-import { FaSadTear } from "react-icons/fa";
+// import { FaSadTear } from "react-icons/fa";
 import { IoIosTime } from "react-icons/io";
+import { useEffect, useState } from "react";
+import SuccessImgage from "../assets/images/2.png";
+import CryImage from "../assets/images/3.png";
+import Working from "../assets/images/1.png";
+import GearSpinner from "./GearSpinner";
 
 interface Props {
   num: string;
@@ -60,6 +65,14 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
       <div className="flex-1 flex items-center justify-center">
         {floor.status === "running" ? (
           <div className="p-3 bg-white/60 rounded-lg text-center w-full max-w-[260px]">
+            <div className="w-28 h-28 mx-auto mb-4">
+              <img
+                src={Working}
+                alt="working"
+                className="w-full h-full object-contain animate-spin border-2 rounded-full"
+                style={{ animationDuration: "8s" }}
+              />
+            </div>
             <div className="text-xs text-gray-600 mb-1">
               <IoIosTime className="inline-block w-4 h-4 mr-1" />
               เวลาเหลือ
@@ -73,9 +86,10 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
           </div>
         ) : floor.status === "completed" ? (
           <div className="flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
+            <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
               {" "}
-              <svg
+              <img src={SuccessImgage} alt="" />
+              {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -89,23 +103,36 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
                   strokeLinejoin="round"
                   d="M5 13l4 4L19 7"
                 />{" "}
-              </svg>{" "}
+              </svg>{" "} */}
             </div>
             <p className="mt-3 text-green-700 font-semibold text-lg">
-              เสร็จละจู้ว
+              เสร็จแล้วจู้วว
             </p>
+
+            {/* Completion time and countdown until floating */}
+            <div className="mt-2 text-center text-sm text-gray-600">
+              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
+                <div>เวลาเสร็จ: {new Date(floor.startTime + floor.estimatedDurationMinutes * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              ) : (
+                <div>เวลาเสร็จ: -</div>
+              )} */}
+
+              <div className="mt-1 text-xs text-gray-500">
+                {/* จะลอยใน:  */}
+                <span className="text-[18px] font-mono font-semibold">
+                  {hhmmss(floor.remainingSeconds ?? 1)}
+                </span>
+              </div>
+            </div>
           </div>
         ) : floor.status === "floating" ? (
-          <div className="flex flex-col items-center justify-center">
-            <FaSadTear className="w-24 h-24 text-gray-500" />
-
-            <p className="mt-3 text-gray-600 font-semibold text-lg">
-              ลอยแล้วพรี่!!
-            </p>
-          </div>
+          <FloatingInfo floor={floor} />
         ) : (
-          <div className="p-3 bg-white/60 rounded-lg text-center text-sm text-gray-600 w-full max-w-[260px]">
-            พร้อมทำงาน ✨
+          <div className="">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center ">
+              {/* <img src={CryImage} alt="" /> */}
+              <FaPause className="w-16 h-16 text-gray-400" />
+            </div>
           </div>
         )}
       </div>
@@ -137,6 +164,49 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
           <FaRedo className="w-4 h-4" />
           <span>รีเซ็ต</span>
         </button>
+      </div>
+    </div>
+  );
+}
+
+function FloatingInfo({ floor }: { floor: Floor }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (floor.status !== "floating") return;
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000); // update every minute
+    return () => clearInterval(id);
+  }, [floor.status]);
+
+  const floatingStart =
+    floor.startTime && floor.estimatedDurationMinutes
+      ? floor.startTime +
+        floor.estimatedDurationMinutes * 60 * 1000 +
+        15 * 60 * 1000
+      : null;
+
+  const elapsedMs = floatingStart ? Math.max(0, now - floatingStart) : null;
+  const hours = elapsedMs ? Math.floor(elapsedMs / (1000 * 60 * 60)) : 0;
+  const minutes = elapsedMs
+    ? Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60))
+    : 0;
+
+  const elapsedText = elapsedMs
+    ? hours > 0
+      ? `${hours} ชม ${minutes} นาที`
+      : `${minutes} นาที`
+    : "-";
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
+        <img src={CryImage} alt="" />
+      </div>
+      <p className="mt-3 text-gray-600 font-semibold text-lg">ลอยแล้วพรี่!!</p>
+      <div className="mt-2 text-sm text-gray-600">
+        <span className="font-mono text-[18px] font-semibold">
+          {elapsedText}
+        </span>
       </div>
     </div>
   );
