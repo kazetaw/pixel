@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ref, update } from "firebase/database";
 import type { Floor } from "../types/floor";
 import { hhmmss } from "../utils/time";
@@ -210,7 +211,7 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
 }
 
 function FloatingInfo({ floor }: { floor: Floor }) {
-  const [now, setNow] = useState(Date.now());
+  const [, setNow] = useState(Date.now());
 
   useEffect(() => {
     if (floor.status !== "floating") return;
@@ -225,17 +226,7 @@ function FloatingInfo({ floor }: { floor: Floor }) {
         15 * 60 * 1000
       : null;
 
-  const elapsedMs = floatingStart ? Math.max(0, now - floatingStart) : null;
-  const hours = elapsedMs ? Math.floor(elapsedMs / (1000 * 60 * 60)) : 0;
-  const minutes = elapsedMs
-    ? Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60))
-    : 0;
 
-  const elapsedText = elapsedMs
-    ? hours > 0
-      ? `${hours} ชม ${minutes} นาที`
-      : `${minutes} นาที`
-    : "-";
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -244,9 +235,38 @@ function FloatingInfo({ floor }: { floor: Floor }) {
       </div>
       <p className="mt-3 text-gray-600 font-semibold text-lg">ลอยแล้วพรี่!!</p>
       <div className="mt-2 text-sm text-gray-600">
-        <span className="font-mono text-[18px] font-semibold">
-          {elapsedText}
-        </span>
+        {(() => {
+          function LiveElapsed() {
+            const [now2, setNow2] = useState(Date.now());
+
+            useEffect(() => {
+              if (!floatingStart) return;
+              const id = setInterval(() => setNow2(Date.now()), 1000); // update every second
+              return () => clearInterval(id);
+            }, [floatingStart]);
+
+            const elapsed = floatingStart
+              ? Math.max(0, now2 - floatingStart)
+              : 0;
+            const hh = String(Math.floor(elapsed / 3600000)).padStart(2, "0");
+            const mm = String(Math.floor((elapsed % 3600000) / 60000)).padStart(
+              2,
+              "0"
+            );
+            const ss = String(Math.floor((elapsed % 60000) / 1000)).padStart(
+              2,
+              "0"
+            );
+
+            return (
+              <span className="font-mono text-[18px] font-semibold">
+                {floatingStart ? `${hh}:${mm}:${ss}` : "00:00:00"}
+              </span>
+            );
+          }
+
+          return <LiveElapsed />;
+        })()}
       </div>
     </div>
   );
