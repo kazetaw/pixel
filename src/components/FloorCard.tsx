@@ -10,9 +10,6 @@ import { useEffect, useState } from "react";
 import SuccessImgage from "../assets/images/2.png";
 import CryImage from "../assets/images/3.png";
 import Working from "../assets/images/1.png";
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-dayjs.extend(duration);
 
 interface Props {
   num: string;
@@ -115,70 +112,18 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
 
             {/* Completion time and countdown until floating */}
             <div className="mt-2 text-center text-sm text-gray-600">
-              {/** Prefer the client-side remainingSeconds (set when transitioning to completed).
-               * This avoids relying only on startTime+estimatedDuration which may be missing or stale
-               * and prevents immediately showing "ลอยแล้ว" for very short timers.
-               */}
-              {typeof floor.remainingSeconds === "number" ? (
-                (() => {
-                  const totalSec = floor.remainingSeconds ?? 0;
-                  const passed = totalSec <= 0;
-                  const absSec = Math.abs(totalSec);
-                  const hours = Math.floor(absSec / 3600);
-                  const minutes = Math.floor((absSec % 3600) / 60);
-                  const seconds = Math.floor(absSec % 60);
-                  const pad = (n: number) => n.toString().padStart(2, "0");
-                  const remainingText =
-                    hours > 0
-                      ? `${hours} ชม ${minutes} นาที ${pad(seconds)} วินาที`
-                      : `${pad(minutes)}:${pad(seconds)}`;
-
-                  return (
-                    <div className="font-bold">
-                      <div className="mt-1 text-[24px] text-gray-600 font-mono">
-                        {passed
-                          ? `ลอยแล้ว  ${hours} : ${minutes} : ${seconds}`
-                          : `${remainingText}`}
-                      </div>
-                    </div>
-                  );
-                })()
-              ) : floor.startTime && floor.estimatedDurationMinutes ? (
-                (() => {
-                  const completionTs =
-                    floor.startTime +
-                    floor.estimatedDurationMinutes * 60 * 1000;
-                  const floatingDeadline = completionTs + 15 * 60 * 1000; // 15 นาทีถอยหลังจากเสร็จ
-                  const now = Date.now();
-                  const msRemaining = floatingDeadline - now;
-                  const passed = msRemaining <= 0;
-                  const diff = Math.abs(msRemaining);
-
-                  const hours = Math.floor(diff / (1000 * 60 * 60));
-                  const minutes = Math.floor(
-                    (diff % (1000 * 60 * 60)) / (1000 * 60)
-                  );
-                  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                  const pad = (n: number) => n.toString().padStart(2, "0");
-                  const remainingText =
-                    hours > 0
-                      ? `${hours} ชม ${minutes} นาที ${pad(seconds)} วินาที`
-                      : `${pad(minutes)}:${pad(seconds)} `;
-
-                  return (
-                    <div className="font-bold">
-                      <div className="mt-1 text-[24px] text-gray-600 font-mono">
-                        {passed
-                          ? `ลอยแล้ว  ${hours} : ${minutes} : ${seconds} `
-                          : ` ${remainingText}`}
-                      </div>
-                    </div>
-                  );
-                })()
+              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
+                <div>เวลาเสร็จ: {new Date(floor.startTime + floor.estimatedDurationMinutes * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
               ) : (
                 <div>เวลาเสร็จ: -</div>
-              )}
+              )} */}
+
+              <div className="mt-1 text-xs text-gray-500">
+                {/* จะลอยใน:  */}
+                {/* <span className="text-[18px] font-mono font-semibold">
+                  {hhmmss(floor.remainingSeconds ?? 1)}
+                </span> */}
+              </div>
             </div>
           </div>
         ) : floor.status === "floating" ? (
@@ -228,35 +173,31 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
 function FloatingInfo({ floor }: { floor: Floor }) {
   const [now, setNow] = useState(Date.now());
 
-  // start/stop the ticking when either status or floatingStart changes
   useEffect(() => {
     if (floor.status !== "floating") return;
-    const id = setInterval(() => setNow(Date.now()), 1000); // update every second
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000); // update every minute
     return () => clearInterval(id);
-  }, [floor.status, floor.floatingStart]);
+  }, [floor.status]);
 
-  // Prefer an explicit floatingStart timestamp (set by client or server). If missing,
-  // fall back to calculating from startTime + estimatedDuration + 15min (legacy behavior).
   const floatingStart =
-    floor.floatingStart ??
-    (floor.startTime && floor.estimatedDurationMinutes
-      ? floor.startTime + floor.estimatedDurationMinutes * 15 * 60
-      : null);
+    floor.startTime && floor.estimatedDurationMinutes
+      ? floor.startTime +
+        floor.estimatedDurationMinutes * 60 * 1000 +
+        15 * 60 * 1000
+      : null;
 
-  let elapsedText = "-";
-  if (floatingStart) {
-    const diffMs = now - floatingStart;
-    if (diffMs > 0) {
-      const dur = dayjs.duration(diffMs);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const hours = pad(Math.floor(dur.asHours())); // total hours
-      const minutes = pad(dur.minutes());
-      const seconds = pad(dur.seconds());
-      elapsedText = `${hours}:${minutes}:${seconds}`;
-    } else {
-      elapsedText = "00:00:00";
-    }
-  }
+  const elapsedMs = floatingStart ? Math.max(0, now - floatingStart) : null;
+  const hours = elapsedMs ? Math.floor(elapsedMs / (1000 * 60 * 60)) : 0;
+  const minutes = elapsedMs
+    ? Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60))
+    : 0;
+
+  const elapsedText = elapsedMs
+    ? hours > 0
+      ? `${hours} ชม ${minutes} นาที`
+      : `${minutes} นาที`
+    : "-";
+  console.log("🚀 ~ FloatingInfo ~ elapsedText:", elapsedText)
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -264,11 +205,11 @@ function FloatingInfo({ floor }: { floor: Floor }) {
         <img src={CryImage} alt="" />
       </div>
       <p className="mt-3 text-gray-600 font-semibold text-lg">ลอยแล้วพรี่!!</p>
-      <div className="mt-2 text-sm text-gray-600 text-center">
-        <div className="font-mono text-[20px] font-semibold text-gray-800">
+      {/* <div className="mt-2 text-sm text-gray-600">
+        <span className="font-mono text-[18px] font-semibold">
           {elapsedText}
-        </div>
-      </div>
+        </span>
+      </div> */}
     </div>
   );
 }
