@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Floor {
+  serverStatus: string;
   profession: string;
   startTime: number | null;
   estimatedDurationMinutes: number;
