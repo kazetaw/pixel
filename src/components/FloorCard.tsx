@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import SuccessImgage from "../assets/images/2.png";
 import CryImage from "../assets/images/3.png";
 import Working from "../assets/images/1.png";
+import dayjs from "dayjs";
 
 interface Props {
   num: string;
@@ -112,18 +113,36 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
 
             {/* Completion time and countdown until floating */}
             <div className="mt-2 text-center text-sm text-gray-600">
-              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
-                <div>เวลาเสร็จ: {new Date(floor.startTime + floor.estimatedDurationMinutes * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              {floor.startTime && floor.estimatedDurationMinutes ? (
+                (() => {
+                  const completionTs =
+                    floor.startTime +
+                    floor.estimatedDurationMinutes * 60 * 1000;
+                  const completion = dayjs(completionTs);
+                  const msDiff = dayjs().diff(completion);
+                  const passed = msDiff >= 0;
+                  const diff = Math.abs(msDiff);
+                  const hours = Math.floor(diff / (1000 * 60 * 60));
+                  const minutes = Math.floor(
+                    (diff % (1000 * 60 * 60)) / (1000 * 60)
+                  );
+                  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                  const statusText = passed
+                    ? `ผ่านมา ${hours} ชม ${minutes} นาที ${seconds} วินาที`
+                    : `เหลือ ${hours} ชม ${minutes} นาที ${seconds} วินาที`;
+
+                  return (
+                    <div>
+                      <div>เวลาเสร็จ: {completion.format("HH:mm:ss")}</div>
+                      <div className="mt-1 text-sm text-gray-600 font-mono">
+                        {statusText}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <div>เวลาเสร็จ: -</div>
-              )} */}
-
-              <div className="mt-1 text-xs text-gray-500">
-                {/* จะลอยใน:  */}
-                <span className="text-[18px] font-mono font-semibold">
-                  {hhmmss(floor.remainingSeconds ?? 1)}
-                </span>
-              </div>
+              )}
             </div>
           </div>
         ) : floor.status === "floating" ? (
