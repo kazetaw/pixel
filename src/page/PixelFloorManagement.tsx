@@ -186,20 +186,6 @@ export default function PixelFloorManagement(): JSX.Element {
       floating: values.filter((f) => f.status === "floating").length,
     };
   }, [floors]);
-  useEffect(() => {
-    const toSync = Object.entries(floors).filter(
-      ([, f]) => f.needsSync === true
-    );
-
-    toSync.forEach(([num, floor]) => {
-      const floorRef = ref(database, `companies/${COMPANY_ID}/floors/${num}`);
-      update(floorRef, {
-        status: floor.status,
-        remainingSeconds: floor.remainingSeconds ?? 0,
-        needsSync: false,
-      }).catch(console.error);
-    });
-  }, [floors]);
 
   if (loading) {
     return (
