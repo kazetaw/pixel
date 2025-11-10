@@ -112,11 +112,50 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
 
             {/* Completion time and countdown until floating */}
             <div className="mt-2 text-center text-sm text-gray-600">
-              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
-                <div>เวลาเสร็จ: {new Date(floor.startTime + floor.estimatedDurationMinutes * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              {floor.startTime && floor.estimatedDurationMinutes ? (
+                <div>
+                  {/* เวลาเสร็จ:{" "}
+                  {new Date(
+                    floor.startTime + floor.estimatedDurationMinutes * 60 * 1000
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })} */}
+                </div>
               ) : (
                 <div>เวลาเสร็จ: -</div>
-              )} */}
+              )}
+              {floor.startTime && floor.estimatedDurationMinutes ? (
+                (() => {
+                  const completionMs =
+                    floor.startTime +
+                    floor.estimatedDurationMinutes * 60 * 1000;
+                  const floatingMs = completionMs + 15 * 60 * 1000;
+                  const remainingSec = Math.max(
+                    0,
+                    Math.floor((floatingMs - Date.now()) / 1000)
+                  );
+                  return (
+                    <>
+                      <div>
+                        {/* เวลาเสร็จ + 15 นาที:{" "}
+                        {new Date(floatingMs).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })} */}
+                      </div>
+                      <div className="mt-1">
+                        {/* จะลอยใน:{" "} */}
+                        <span className="text-[18px] font-mono font-semibold">
+                          {hhmmss(remainingSec)}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()
+              ) : (
+                <div className="mt-1">เวลาเสร็จ: -</div>
+              )}
 
               <div className="mt-1 text-xs text-gray-500">
                 {/* จะลอยใน:  */}
