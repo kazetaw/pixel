@@ -17,18 +17,6 @@ const computeRemaining = (floor: Floor): number => {
     const end = floor.startTime + floor.estimatedDurationMinutes * 60 * 1000;
     return Math.max(0, Math.floor((end - Date.now()) / 1000));
   }
-  
-  // คำนวณเวลาที่เหลือก่อนจะลอยสำหรับ status "completed"
-  if (
-    floor.status === "completed" &&
-    floor.startTime &&
-    floor.estimatedDurationMinutes
-  ) {
-    const completionTime = floor.startTime + floor.estimatedDurationMinutes * 60 * 1000;
-    const floatingTime = completionTime + 15 * 60 * 1000; // เพิ่ม 15 นาที
-    return Math.max(0, Math.floor((floatingTime - Date.now()) / 1000));
-  }
-  
   return 0;
 };
 
@@ -145,7 +133,7 @@ export default function PixelFloorManagement(): JSX.Element {
           let changed = false;
           for (const [num, f] of Object.entries(prev)) {
             const recalculated =
-              f.status === "running" || f.status === "completed"
+              f.status === "running"
                 ? computeRemaining(f)
                 : f.remainingSeconds ?? 0;
             const same = recalculated === (f.remainingSeconds ?? 0);

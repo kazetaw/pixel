@@ -197,7 +197,6 @@ function FloatingInfo({ floor }: { floor: Floor }) {
       ? `${hours} ชม ${minutes} นาที`
       : `${minutes} นาที`
     : "-";
-  console.log("🚀 ~ FloatingInfo ~ elapsedText:", elapsedText)
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -205,11 +204,11 @@ function FloatingInfo({ floor }: { floor: Floor }) {
         <img src={CryImage} alt="" />
       </div>
       <p className="mt-3 text-gray-600 font-semibold text-lg">ลอยแล้วพรี่!!</p>
-      {/* <div className="mt-2 text-sm text-gray-600">
+      <div className="mt-2 text-sm text-gray-600">
         <span className="font-mono text-[18px] font-semibold">
           {elapsedText}
         </span>
-      </div> */}
+      </div>
     </div>
   );
 }

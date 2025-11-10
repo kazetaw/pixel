@@ -25,8 +25,6 @@ exports.markFloating = functions.pubsub
           floor.startTime + floor.estimatedDurationMinutes * 60 * 1000;
         if (endTime + fifteenMinutes <= now) {
           updates[`companies/pixel/floors/${floorNum}/status`] = "floating";
-          // also write the floating start timestamp so clients can compute elapsed reliably
-          updates[`companies/pixel/floors/${floorNum}/floatingStart`] = now;
         }
       }
     });
