@@ -35,7 +35,7 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
   return (
     <div
       className={[
-        "h-[340px]", // << ความสูงคงที่ทั้งใบ
+        "h-[280px]", // << ลดความสูงลงเล็กน้อย
         "flex flex-col", // layout ภายในเป็นคอลัมน์
         "p-4 border-2 rounded-lg transition-shadow",
         getStatusColor(floor.status),
@@ -47,14 +47,14 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
       <div className="mb-3">
         <div className="flex justify-between items-start">
           <div className="min-w-0">
-            <div className="text-2xl font-bold text-gray-800">ชั้น {num}</div>
-            <div className="text-sm text-gray-600 truncate">
+            <div className="text-xl font-bold text-gray-800">ชั้น {num}</div>
+            <div className="text-xs text-gray-600 truncate">
               {floor.profession || "ไม่ระบุอาชีพ"}
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-xs text-gray-500">สถานะ</div>
-            <div className="font-bold text-sm px-2 py-1 rounded bg-white/50">
+            <div className="text-[10px] text-gray-500">สถานะ</div>
+            <div className="font-bold text-xs px-1 py-0.5 rounded bg-white/50">
               {getStatusText(floor.status)}
             </div>
           </div>
@@ -64,8 +64,8 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
       {/* Content (กินพื้นที่ที่เหลือทั้งหมด) */}
       <div className="flex-1 flex items-center justify-center">
         {floor.status === "running" ? (
-          <div className="p-3 bg-white/60 rounded-lg text-center w-full max-w-[260px]">
-            <div className="w-28 h-28 mx-auto mb-4">
+          <div className="p-2 bg-white/60 rounded-lg text-center w-full max-w-[220px]">
+            <div className="w-20 h-20 mx-auto mb-3">
               <img
                 src={Working}
                 alt="working"
@@ -75,20 +75,35 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
                 //                animate-spin border-2
               />
             </div>
-            <div className="text-xs text-gray-600 mb-1">
+            {/* <div className="text-xs text-gray-600 mb-1">
               <IoIosTime className="inline-block w-4 h-4 mr-1" />
               เวลาเหลือ
-            </div>
-            <div className="text-2xl font-mono font-bold text-gray-800">
+            </div> */}
+            <div className="text-lg font-mono font-bold text-gray-800">
               {hhmmss(floor.remainingSeconds || 0)}
             </div>
             {/* <div className="text-xs text-gray-500 mt-1">
               ทั้งหมด {floor.estimatedDurationMinutes} นาที
             </div> */}
+            <div className="text-sm text-gray-600">
+              {floor.startTime && floor.estimatedDurationMinutes ? (
+                <div className="font-bold text-[#000] font-mono">
+                  เวลาเสร็จ:{" "}
+                  {new Date(
+                    floor.startTime + floor.estimatedDurationMinutes * 60 * 1000
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              ) : (
+                <div>เวลาเสร็จ: -</div>
+              )}
+            </div>
           </div>
         ) : floor.status === "completed" ? (
           <div className="flex flex-col items-center justify-center">
-            <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
+            <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
               {" "}
               <img src={SuccessImgage} alt="" />
               {/* <svg
@@ -107,25 +122,25 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
                 />{" "}
               </svg>{" "} */}
             </div>
-            <p className="mt-3 text-green-700 font-semibold text-lg">
+            <p className="mt-2 text-green-700 font-semibold text-md">
               เสร็จแล้วจู้วว
             </p>
 
             {/* Completion time and countdown until floating */}
             <div className="mt-2 text-center text-sm text-gray-600">
-              {floor.startTime && floor.estimatedDurationMinutes ? (
+              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
                 <div>
-                  {/* เวลาเสร็จ:{" "}
+                  เวลาเสร็จ:{" "}
                   {new Date(
                     floor.startTime + floor.estimatedDurationMinutes * 60 * 1000
                   ).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
-                  })} */}
+                  })}
                 </div>
               ) : (
                 <div>เวลาเสร็จ: -</div>
-              )}
+              )} */}
               {floor.startTime && floor.estimatedDurationMinutes ? (
                 (() => {
                   const completionMs =
@@ -146,8 +161,7 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
                         })} */}
                       </div>
                       <div className="mt-1">
-                        {/* จะลอยใน:{" "} */}
-                        <span className="text-[18px] font-mono font-semibold">
+                        <span className="text-[16px] font-mono font-semibold">
                           {hhmmss(remainingSec)}
                         </span>
                       </div>
@@ -172,7 +186,7 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
           <div className="">
             <div className="w-24 h-24 rounded-full flex items-center justify-center ">
               {/* <img src={CryImage} alt="" /> */}
-              <FaPause className="w-16 h-16 text-gray-400" />
+              <FaPause className="w-12 h-12 text-gray-400" />
             </div>
           </div>
         )}
@@ -183,27 +197,27 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
         {floor.status !== "running" && (
           <button
             onClick={() => onStart(num, floor)}
-            className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+            className="flex-1 px-2 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
           >
-            <FaPlay className="w-4 h-4" />
-            <span>เริ่ม</span>
+            <FaPlay className="w-3 h-3" />
+            <span className="text-sm">เริ่ม</span>
           </button>
         )}
         {floor.status === "running" && (
           <button
             onClick={() => stopFloor(num)}
-            className="flex-1 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+            className="flex-1 px-2 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
           >
-            <FaPause className="w-4 h-4" />
-            <span>หยุด</span>
+            <FaPause className="w-3 h-3" />
+            <span className="text-sm">หยุด</span>
           </button>
         )}
         <button
           onClick={() => onReset(num)}
-          className="flex-1 px-3 py-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+          className="flex-1 px-2 py-1.5 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
         >
-          <FaRedo className="w-4 h-4" />
-          <span>รีเซ็ต</span>
+          <FaRedo className="w-3 h-3" />
+          <span className="text-sm">รีเซ็ต</span>
         </button>
       </div>
     </div>
@@ -230,10 +244,10 @@ function FloatingInfo({ floor }: { floor: Floor }) {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
+      <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
         <img src={CryImage} alt="" />
       </div>
-      <p className="mt-3 text-gray-600 font-semibold text-lg">ลอยแล้วพรี่!!</p>
+      <p className="mt-2 text-gray-600 font-semibold text-md">ลอยแล้วพรี่!!</p>
       <div className="mt-2 text-sm text-gray-600">
         {(() => {
           function LiveElapsed() {
@@ -259,7 +273,7 @@ function FloatingInfo({ floor }: { floor: Floor }) {
             );
 
             return (
-              <span className="font-mono text-[18px] font-semibold">
+              <span className="font-mono text-[16px] font-semibold">
                 {floatingStart ? `${hh}:${mm}:${ss}` : "00:00:00"}
               </span>
             );
