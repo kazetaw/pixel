@@ -8,7 +8,6 @@ import FloorsGrid from "../components/FloorsGrid";
 import TimerModal from "../components/TimerModal";
 import Footer from "../components/Footer";
 import FloorOverview from "../components/FloorOverview";
-
 /** ------------------------------
  *  CONFIG
  *  ------------------------------ */
