@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { JSX, useEffect, useMemo, useRef, useState } from "react";
+import { JSX, useEffect, useRef, useState } from "react";
 import { onValue, ref, update } from "firebase/database";
 import { database, COMPANY_ID } from "../firebase/config";
-import type { Floor, Floors, FloorStats } from "../types/floor";
+import type { Floor, Floors } from "../types/floor";
 import Header from "../components/Header";
-import Stats from "../components/Stats";
 import FloorsGrid from "../components/FloorsGrid";
 import TimerModal from "../components/TimerModal";
 import Footer from "../components/Footer";
+import FloorOverview from "../components/FloorOverview";
 
 /** ------------------------------
  *  CONFIG
@@ -84,6 +84,12 @@ export default function PixelFloorManagement(): JSX.Element {
   const tickId = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMounted = useRef(false);
 
+  // Refs สำหรับ scroll to floor
+  const floorsGridRef = useRef<HTMLElement>(null);
+
+  // State สำหรับ highlight floor
+  const [highlightedFloor, setHighlightedFloor] = useState<string | null>(null);
+
   /**
    * หมายเหตุ: เราจะเก็บ "สถานะที่มาจากเซิร์ฟเวอร์ล่าสุด" ไว้ใน floor.serverStatus
    * เพื่อใช้ตัดสินใจว่าต้อง sync transition กลับ RTDB หรือไม่
@@ -93,6 +99,34 @@ export default function PixelFloorManagement(): JSX.Element {
    * - needsSync: boolean
    * - serverStatus: Phase | undefined
    */
+
+  /** ------------------------------
+   *  Scroll to floor function
+   *  ------------------------------ */
+  const scrollToFloor = (floorNum: string) => {
+    // Highlight floor
+    setHighlightedFloor(floorNum);
+
+    // Find floor card and scroll to it
+    const floorElement = document.querySelector(`[data-floor="${floorNum}"]`);
+    if (floorElement) {
+      floorElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else if (floorsGridRef.current) {
+      // ถ้าไม่เจอ element เฉพาะ ให้ scroll ไปยัง floors grid
+      floorsGridRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+
+    // Clear highlight after 3 seconds
+    setTimeout(() => {
+      setHighlightedFloor(null);
+    }, 3000);
+  };
 
   /** ------------------------------
    *  Subscribe to Firebase (RTDB)
@@ -297,20 +331,6 @@ export default function PixelFloorManagement(): JSX.Element {
   };
 
   /** ------------------------------
-   *  Derived stats
-   *  ------------------------------ */
-  const stats: FloorStats = useMemo(() => {
-    const values = Object.values(floors);
-    return {
-      total: values.length,
-      idle: values.filter((f) => f.status === "idle").length,
-      running: values.filter((f) => f.status === "running").length,
-      completed: values.filter((f) => f.status === "completed").length,
-      floating: values.filter((f) => f.status === "floating").length,
-    };
-  }, [floors]);
-
-  /** ------------------------------
    *  UI
    *  ------------------------------ */
   if (loading) {
@@ -326,12 +346,34 @@ export default function PixelFloorManagement(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br p-4">
-      <div className="max-w-7xl mx-auto">
-        <Header />
-        <Stats stats={stats} />
-        <FloorsGrid floors={floors} onStart={startFloor} onReset={resetFloor} />
-        <Footer />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 opacity-30">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+                           radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)`,
+          }}
+        ></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 p-4 md:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <Header />
+          <FloorOverview floors={floors} onFloorClick={scrollToFloor} />
+          <section ref={floorsGridRef}>
+            <FloorsGrid
+              floors={floors}
+              onStart={startFloor}
+              onReset={resetFloor}
+              highlightedFloor={highlightedFloor}
+            />
+          </section>
+          <Footer />
+        </div>
       </div>
 
       <TimerModal

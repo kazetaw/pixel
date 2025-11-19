@@ -2,10 +2,8 @@
 import { ref, update } from "firebase/database";
 import type { Floor } from "../types/floor";
 import { hhmmss } from "../utils/time";
-import { getStatusColor, getStatusText } from "../utils/ui";
 import { database, COMPANY_ID } from "../firebase/config";
 import { FaPlay, FaPause, FaRedo } from "react-icons/fa";
-// import { FaSadTear } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import SuccessImgage from "../assets/images/2.png";
 import CryImage from "../assets/images/3.png";
@@ -16,9 +14,16 @@ interface Props {
   floor: Floor;
   onStart: (floorNum: string, floor: Floor) => void;
   onReset: (floorNum: string) => void;
+  isHighlighted?: boolean;
 }
 
-export default function FloorCard({ num, floor, onStart, onReset }: Props) {
+export default function FloorCard({
+  num,
+  floor,
+  onStart,
+  onReset,
+  isHighlighted,
+}: Props) {
   const stopFloor = (floorNum: string) => {
     const floorRef = ref(
       database,
@@ -31,63 +36,111 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
     }).catch(console.error);
   };
 
+  const getCardStyles = (status: string) => {
+    const baseStyles =
+      "h-[220px] flex flex-col p-3 rounded-lg transition-all duration-500 shadow-sm hover:shadow-md border";
+
+    switch (status) {
+      case "idle":
+        return `${baseStyles} bg-white border-slate-200 hover:border-slate-300`;
+      case "running":
+        return `${baseStyles} bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-blue-100`;
+      case "completed":
+        return `${baseStyles} bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 shadow-emerald-100`;
+      case "floating":
+        return `${baseStyles} bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-red-100`;
+      default:
+        return `${baseStyles} bg-white border-slate-200`;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "idle":
+        return "ว่าง";
+      case "running":
+        return "ทำงาน";
+      case "completed":
+        return "เสร็จ";
+      case "floating":
+        return "ลอย";
+      default:
+        return "ไม่ทราบ";
+    }
+  };
+
   return (
     <div
-      className={[
-        "h-[280px]", // << ลดความสูงลงเล็กน้อย
-        "flex flex-col", // layout ภายในเป็นคอลัมน์
-        "p-4 border-2 rounded-lg transition-shadow",
-        getStatusColor(floor.status),
-        // เอา scale ออกเพื่อไม่ให้สูง/ใหญ่กว่าการ์ดอื่น
-        floor.status === "running" ? "shadow-lg" : "hover:shadow-md",
-      ].join(" ")}
+      className={`
+        ${getCardStyles(floor.status)}
+        ${
+          isHighlighted
+            ? "ring-2 ring-amber-400 ring-opacity-50 shadow-lg scale-105"
+            : ""
+        }
+      `}
     >
       {/* Header */}
-      <div className="mb-3">
-        <div className="flex justify-between items-start">
-          <div className="min-w-0">
-            <div className="text-xl font-bold text-gray-800">ชั้น {num}</div>
-            <div className="text-xs text-gray-600 truncate">
-              {floor.profession || "ไม่ระบุอาชีพ"}
-            </div>
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-base font-bold text-slate-800 mb-0.5">
+            ชั้น {num}
           </div>
-          <div className="text-right shrink-0">
-            <div className="text-[10px] text-gray-500">สถานะ</div>
-            <div className="font-bold text-xs px-1 py-0.5 rounded bg-white/50">
-              {getStatusText(floor.status)}
-            </div>
+          <div className="text-xs text-slate-600 truncate">
+            {floor.profession || "ไม่ระบุอาชีพ"}
+          </div>
+        </div>
+        <div className="flex flex-col items-end">
+          <div
+            className={`
+            px-2 py-0.5 rounded-full text-xs font-semibold border
+            ${
+              floor.status === "idle"
+                ? "bg-slate-100 text-slate-600 border-slate-200"
+                : ""
+            }
+            ${
+              floor.status === "running"
+                ? "bg-blue-500 text-white border-blue-500 animate-pulse"
+                : ""
+            }
+            ${
+              floor.status === "completed"
+                ? "bg-emerald-500 text-white border-emerald-500"
+                : ""
+            }
+            ${
+              floor.status === "floating"
+                ? "bg-red-500 text-white border-red-500"
+                : ""
+            }
+          `}
+          >
+            {getStatusText(floor.status)}
           </div>
         </div>
       </div>
-
-      {/* Content (กินพื้นที่ที่เหลือทั้งหมด) */}
-      <div className="flex-1 flex items-center justify-center">
+      {/* Content Area */}
+      <div className="flex-1 flex items-center justify-center min-h-0">
         {floor.status === "running" ? (
-          <div className="p-2 bg-white/60 rounded-lg text-center w-full max-w-[220px]">
-            <div className="w-20 h-20 mx-auto mb-3">
+          <div className="text-center w-full">
+            <div className="w-16 h-16 mx-auto mb-1 relative">
+              <div className="absolute inset-0 bg-blue-100 rounded-full"></div>
               <img
                 src={Working}
                 alt="working"
-                className="w-full h-full object-contain 
-                rounded-full"
-                // style={{ animationDuration: "8s" }}
-                //                animate-spin border-2
+                className="w-full h-full object-contain rounded-full relative z-10"
               />
             </div>
-            {/* <div className="text-xs text-gray-600 mb-1">
-              <IoIosTime className="inline-block w-4 h-4 mr-1" />
-              เวลาเหลือ
-            </div> */}
-            <div className="text-lg font-mono font-bold text-gray-800">
-              {hhmmss(floor.remainingSeconds || 0)}
-            </div>
-            {/* <div className="text-xs text-gray-500 mt-1">
-              ทั้งหมด {floor.estimatedDurationMinutes} นาที
-            </div> */}
-            <div className="text-sm text-gray-600">
+
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1.5 border border-white/40">
+              <div className="text-sm font-mono font-bold text-slate-800 mb-0.5">
+                {hhmmss(floor.remainingSeconds || 0)}
+              </div>
+
               {floor.startTime && floor.estimatedDurationMinutes ? (
-                <div className="font-bold text-[#000] font-mono">
-                  เวลาเสร็จ:{" "}
+                <div className="text-xs text-slate-600">
+                  เสร็จ:{" "}
                   {new Date(
                     floor.startTime + floor.estimatedDurationMinutes * 60 * 1000
                   ).toLocaleTimeString([], {
@@ -95,130 +148,95 @@ export default function FloorCard({ num, floor, onStart, onReset }: Props) {
                     minute: "2-digit",
                   })}
                 </div>
-              ) : (
-                <div>เวลาเสร็จ: -</div>
-              )}
+              ) : null}
             </div>
           </div>
         ) : floor.status === "completed" ? (
-          <div className="flex flex-col items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
-              {" "}
-              <img src={SuccessImgage} alt="" />
-              {/* <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={3}
-                stroke="white"
-                className="w-8 h-8 animate-[glow_2s_ease-in-out_infinite]"
-              >
-                {" "}
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 13l4 4L19 7"
-                />{" "}
-              </svg>{" "} */}
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-1 relative">
+              <div className="absolute inset-0 bg-emerald-500 rounded-full animate-pulse opacity-20"></div>
+              <div className="w-full h-full rounded-full bg-emerald-500 flex items-center justify-center relative z-10">
+                <img
+                  src={SuccessImgage}
+                  alt="success"
+                  className="w-16 h-16 object-contain"
+                />
+              </div>
             </div>
-            <p className="mt-2 text-green-700 font-semibold text-md">
-              เสร็จแล้วจู้วว
+
+            <p className="text-emerald-700 font-bold text-xs mb-1">
+              เสร็จแล้ว! 🎉
             </p>
 
-            {/* Completion time and countdown until floating */}
-            <div className="mt-2 text-center text-sm text-gray-600">
-              {/* {floor.startTime && floor.estimatedDurationMinutes ? (
-                <div>
-                  เวลาเสร็จ:{" "}
-                  {new Date(
-                    floor.startTime + floor.estimatedDurationMinutes * 60 * 1000
-                  ).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              ) : (
-                <div>เวลาเสร็จ: -</div>
-              )} */}
-              {floor.startTime && floor.estimatedDurationMinutes ? (
-                (() => {
-                  const completionMs =
-                    floor.startTime +
-                    floor.estimatedDurationMinutes * 60 * 1000;
-                  const floatingMs = completionMs + 15 * 60 * 1000;
-                  const remainingSec = Math.max(
-                    0,
-                    Math.floor((floatingMs - Date.now()) / 1000)
-                  );
-                  return (
-                    <>
-                      <div>
-                        {/* เวลาเสร็จ + 15 นาที:{" "}
-                        {new Date(floatingMs).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })} */}
-                      </div>
-                      <div className="mt-1">
-                        <span className="text-[16px] font-mono font-semibold">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1.5 border border-white/40">
+              {floor.startTime && floor.estimatedDurationMinutes
+                ? (() => {
+                    const completionMs =
+                      floor.startTime +
+                      floor.estimatedDurationMinutes * 60 * 1000;
+                    const floatingMs = completionMs + 15 * 60 * 1000;
+                    const remainingSec = Math.max(
+                      0,
+                      Math.floor((floatingMs - Date.now()) / 1000)
+                    );
+                    return (
+                      <div className="text-center">
+                        {/* <div className="text-xs text-slate-600">ลอยใน</div> */}
+                        <div className="text-xs font-mono font-bold text-slate-800">
                           {hhmmss(remainingSec)}
-                        </span>
+                        </div>
                       </div>
-                    </>
-                  );
-                })()
-              ) : (
-                <div className="mt-1">เวลาเสร็จ: -</div>
-              )}
-
-              <div className="mt-1 text-xs text-gray-500">
-                {/* จะลอยใน:  */}
-                {/* <span className="text-[18px] font-mono font-semibold">
-                  {hhmmss(floor.remainingSeconds ?? 1)}
-                </span> */}
-              </div>
+                    );
+                  })()
+                : null}
             </div>
           </div>
         ) : floor.status === "floating" ? (
           <FloatingInfo floor={floor} />
         ) : (
-          <div className="">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center ">
-              {/* <img src={CryImage} alt="" /> */}
-              <FaPause className="w-12 h-12 text-gray-400" />
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-1 bg-slate-100 rounded-full flex items-center justify-center">
+              <FaPause className="w-4 h-4 text-slate-400" />
             </div>
+            <p className="text-slate-500 font-medium text-xs">พร้อมใช้งาน</p>
           </div>
         )}
       </div>
-
-      {/* Buttons (จะอยู่ล่างเสมอเพราะ parent เป็น flex-col + flex-1 ดันพื้นที่ไปแล้ว) */}
-      <div className="flex gap-2">
+      {/* Action Buttons */}
+      <div className="flex gap-1.5 mt-6">
         {floor.status !== "running" && (
           <button
             onClick={() => onStart(num, floor)}
-            className="flex-1 px-2 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+            className="flex-1 px-2 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg 
+                     transition-colors shadow-sm shadow-blue-200 hover:shadow-blue-300
+                     inline-flex items-center justify-center gap-1 text-xs"
           >
-            <FaPlay className="w-3 h-3" />
-            <span className="text-sm">เริ่ม</span>
+            <FaPlay className="w-2.5 h-2.5" />
+            <span>เริ่ม</span>
           </button>
         )}
         {floor.status === "running" && (
           <button
             onClick={() => stopFloor(num)}
-            className="flex-1 px-2 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+            className="flex-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg 
+                     transition-colors shadow-sm shadow-amber-200 hover:shadow-amber-300
+                     inline-flex items-center justify-center gap-1 text-xs"
           >
-            <FaPause className="w-3 h-3" />
-            <span className="text-sm">หยุด</span>
+            <FaPause className="w-2.5 h-2.5" />
+            <span>หยุด</span>
           </button>
         )}
         <button
           onClick={() => onReset(num)}
-          className="flex-1 px-2 py-1.5 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2"
+          className="flex-1 px-2 py-1.5 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg 
+                   transition-colors shadow-sm shadow-slate-200 hover:shadow-slate-300
+                   inline-flex items-center justify-center gap-1 text-xs"
         >
-          <FaRedo className="w-3 h-3" />
-          <span className="text-sm">รีเซ็ต</span>
+          <FaRedo className="w-2.5 h-2.5" />
+          <span>รีเซ็ต</span>
         </button>
       </div>
+    
     </div>
   );
 }
@@ -228,7 +246,7 @@ function FloatingInfo({ floor }: { floor: Floor }) {
 
   useEffect(() => {
     if (floor.status !== "floating") return;
-    const id = setInterval(() => setNow(Date.now()), 60 * 1000); // update every minute
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000);
     return () => clearInterval(id);
   }, [floor.status]);
 
@@ -239,22 +257,30 @@ function FloatingInfo({ floor }: { floor: Floor }) {
         15 * 60 * 1000
       : null;
 
-
-
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-lg animate-[fadeIn_0.6s_ease-out_forwards]">
-        <img src={CryImage} alt="" />
+    <div className="text-center">
+      <div className="w-16 h-16 mx-auto mb-1 relative">
+        <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-30"></div>
+        <div className="w-full h-full bg-red-500 rounded-full flex items-center justify-center relative z-10">
+          <img
+            src={CryImage}
+            alt="floating"
+            className="w-16 h-16 object-contain"
+          />
+        </div>
       </div>
-      <p className="mt-2 text-gray-600 font-semibold text-md">ลอยแล้วพรี่!!</p>
-      <div className="mt-2 text-sm text-gray-600">
+
+      <p className="text-red-600 font-bold text-xs mb-1">ลอยแล้วพรี่!!</p>
+
+      <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1.5 border border-white/40">
+        {/* <div className="text-xs text-slate-600">เวลาลอย</div> */}
         {(() => {
           function LiveElapsed() {
             const [now2, setNow2] = useState(Date.now());
 
             useEffect(() => {
               if (!floatingStart) return;
-              const id = setInterval(() => setNow2(Date.now()), 1000); // update every second
+              const id = setInterval(() => setNow2(Date.now()), 1000);
               return () => clearInterval(id);
             }, [floatingStart]);
 
@@ -272,7 +298,7 @@ function FloatingInfo({ floor }: { floor: Floor }) {
             );
 
             return (
-              <span className="font-mono text-[16px] font-semibold">
+              <span className="font-mono text-xs font-bold text-red-700">
                 {floatingStart ? `${hh}:${mm}:${ss}` : "00:00:00"}
               </span>
             );
