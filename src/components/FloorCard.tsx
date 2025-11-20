@@ -165,7 +165,7 @@ export default function FloorCard({
             </div>
 
             <p className="text-emerald-700 font-bold text-xs mb-1">
-              เสร็จแล้ว! 🎉
+              เสร็จแล้วจู้วว
             </p>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1.5 border border-white/40">
