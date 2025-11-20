@@ -70,28 +70,28 @@ export default function FloorOverview({ floors, onFloorClick }: Props) {
 
         {/* Status Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-100">
+          <div className="flex items-center gap-2 p-3 rounded-xl ">
             <div className="w-3 h-3 bg-slate-300 rounded-full"></div>
             <span className="text-sm font-medium text-slate-600">ว่าง</span>
             <span className="text-sm font-bold text-slate-800 ml-auto">
               {statusCounts.idle}
             </span>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
+          <div className="flex items-center gap-2 p-3 rounded-xl ">
             <div className="w-3 h-3 bg-blue-500 rounded-full "></div>
             <span className="text-sm font-medium text-blue-600">ทำงาน</span>
             <span className="text-sm font-bold text-blue-800 ml-auto">
               {statusCounts.running}
             </span>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+          <div className="flex items-center gap-2 p-3 rounded-xl  ">
             <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
             <span className="text-sm font-medium text-emerald-600">เสร็จ</span>
             <span className="text-sm font-bold text-emerald-800 ml-auto">
               {statusCounts.completed}
             </span>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+          <div className="flex items-center gap-2 p-3 rounded-xl">
             <div className="w-3 h-3 bg-red-500 rounded-full "></div>
             <span className="text-sm font-medium text-red-600">ลอย</span>
             <span className="text-sm font-bold text-red-800 ml-auto">
