@@ -131,6 +131,9 @@ export default function TimerModal({
               <div
                 className="flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden overflow-y-scroll gap-2 overflow-x-auto px-2 py-1 snap-x snap-mandatory"
                 onPointerDown={(e) => {
+                  // Only enable drag-to-scroll for touch/pointer input, not mouse.
+                  // Desktop mouse should still allow normal clicks.
+                  if ((e as any).pointerType === "mouse") return;
                   const el = e.currentTarget as HTMLElement;
                   el.setPointerCapture?.(e.pointerId);
                   (el as any).dataset.isDown = "1";
@@ -138,6 +141,7 @@ export default function TimerModal({
                   (el as any).dataset.scrollLeft = String(el.scrollLeft);
                 }}
                 onPointerMove={(e) => {
+                  if ((e as any).pointerType === "mouse") return;
                   const el = e.currentTarget as HTMLElement;
                   if ((el as any).dataset.isDown !== "1") return;
                   const startX = Number((el as any).dataset.startX);
@@ -146,11 +150,13 @@ export default function TimerModal({
                   el.scrollLeft = scrollLeft - dx;
                 }}
                 onPointerUp={(e) => {
+                  if ((e as any).pointerType === "mouse") return;
                   const el = e.currentTarget as HTMLElement;
                   delete (el as any).dataset.isDown;
                   el.releasePointerCapture?.(e.pointerId);
                 }}
                 onPointerCancel={(e) => {
+                  if ((e as any).pointerType === "mouse") return;
                   const el = e.currentTarget as HTMLElement;
                   delete (el as any).dataset.isDown;
                   el.releasePointerCapture?.(e.pointerId);
