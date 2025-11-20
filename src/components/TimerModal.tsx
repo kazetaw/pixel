@@ -166,6 +166,7 @@ export default function TimerModal({
                     "01:47:59",
                     "01:04:53",
                     "01:27:05",
+                    "07:05:54",
                   ];
                   const formatLabel = (preset: string) => {
                     const [hh, mm, ss] = preset
