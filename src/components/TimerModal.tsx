@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, update } from "firebase/database";
 import type { Floor } from "../types/floor";
 import { database, COMPANY_ID } from "../firebase/config";
@@ -126,25 +127,70 @@ export default function TimerModal({
             {/* Quick Time Presets */}
             <div className="mt-6">
               <p className="text-xs text-slate-500 mb-3">เวลาที่ใช้บ่อย</p>
-              <div className="flex justify-center gap-2">
-                {["00:15:00", "00:30:00", "01:00:00", "02:00:00"].map(
-                  (preset) => (
+
+              <div
+                className="flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden overflow-y-scroll gap-2 overflow-x-auto px-2 py-1 snap-x snap-mandatory"
+                onPointerDown={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.setPointerCapture?.(e.pointerId);
+                  (el as any).dataset.isDown = "1";
+                  (el as any).dataset.startX = String(e.clientX);
+                  (el as any).dataset.scrollLeft = String(el.scrollLeft);
+                }}
+                onPointerMove={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  if ((el as any).dataset.isDown !== "1") return;
+                  const startX = Number((el as any).dataset.startX);
+                  const scrollLeft = Number((el as any).dataset.scrollLeft);
+                  const dx = e.clientX - startX;
+                  el.scrollLeft = scrollLeft - dx;
+                }}
+                onPointerUp={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  delete (el as any).dataset.isDown;
+                  el.releasePointerCapture?.(e.pointerId);
+                }}
+                onPointerCancel={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  delete (el as any).dataset.isDown;
+                  el.releasePointerCapture?.(e.pointerId);
+                }}
+                // keep vertical touch gestures smooth
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                {(() => {
+                  const presets = [
+                    "00:34:59",
+                    "00:40:59",
+                    "00:49:00",
+                    "01:47:59",
+                    "01:04:53",
+                    "01:27:05",
+                  ];
+                  const formatLabel = (preset: string) => {
+                    const [hh, mm, ss] = preset
+                      .split(":")
+                      .map((v) => Number(v));
+                    const parts: string[] = [];
+                    if (hh > 0) parts.push(`${hh} ชม`);
+                    if (mm > 0) parts.push(`${mm} นาที`);
+                    if (ss > 0) parts.push(`${ss} วิ`);
+                    return parts.join(" ");
+                  };
+                  return presets.map((preset) => (
                     <button
                       key={preset}
                       onClick={() => setSelectedTime(preset)}
-                      className={`
-                      px-3 py-2 text-xs font-medium rounded-lg transition-colors
-                      ${
+                      className={`snap-center inline-block min-w-max px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
                         selectedTime === preset
                           ? "bg-blue-500 text-white"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }
-                    `}
+                      }`}
                     >
-                      {preset.replace("00:", "").replace(":00", " นาที")}
+                      {formatLabel(preset)}
                     </button>
-                  )
-                )}
+                  ));
+                })()}
               </div>
             </div>
           </div>
