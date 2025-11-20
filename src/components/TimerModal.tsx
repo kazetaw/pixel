@@ -128,9 +128,14 @@ export default function TimerModal({
             <div className="mt-6">
               <p className="text-xs text-slate-500 mb-3">เวลาที่ใช้บ่อย</p>
 
-              <div
-                className="flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden overflow-y-scroll gap-2 overflow-x-auto px-2 py-1 snap-x snap-mandatory"
-                onPointerDown={(e) => {
+              <>
+                <style>{`@media (hover: none) and (pointer: coarse) {
+                  .tm-presets::-webkit-scrollbar { display: none; }
+                  .tm-presets { -ms-overflow-style: none; scrollbar-width: none; }
+                }`}</style>
+                <div
+                  className="tm-presets flex overflow-x-auto gap-2 px-2 py-1 snap-x snap-mandatory"
+                  onPointerDown={(e) => {
                   // Only enable drag-to-scroll for touch/pointer input, not mouse.
                   // Desktop mouse should still allow normal clicks.
                   if ((e as any).pointerType === "mouse") return;
@@ -166,10 +171,7 @@ export default function TimerModal({
               >
                 {(() => {
                   const presets = [
-                    "00:34:59",
-                    "00:40:59",
                     "00:49:00",
-                    "01:47:59",
                     "01:04:53",
                     "01:27:05",
                     "07:05:54",
@@ -198,7 +200,8 @@ export default function TimerModal({
                     </button>
                   ));
                 })()}
-              </div>
+                </div>
+              </>
             </div>
           </div>
         </div>
